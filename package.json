@@ -1,0 +1,39 @@
+{
+  "name": "pi-sprite",
+  "version": "1.0.0",
+  "description": "Sprite-specific implementations of pi-coding-agent tools — run your coding agent on Fly.io Sprites",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/main.js"
+  },
+  "keywords": [
+    "pi",
+    "coding-agent",
+    "sprite",
+    "fly.io",
+    "ai-agent"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.70.6",
+    "@mariozechner/pi-ai": "^0.70.6",
+    "@mariozechner/pi-coding-agent": "^0.70.6"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-ai": "^0.70.6"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
