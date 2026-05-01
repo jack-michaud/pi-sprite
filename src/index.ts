@@ -29,6 +29,7 @@ import {
 } from "./tools/ls.js";
 
 export * from "./sprite-exec.js";
+export { discoverSpriteSkills, type DiscoverSpriteSkillsOptions, type DiscoverSpriteSkillsResult, type SpriteSkill } from "./skills.js";
 export { createSpriteReadTool, type SpriteReadToolOptions, createSpriteReadOperations } from "./tools/read.js";
 export { createSpriteBashTool, type SpriteBashToolOptions, createSpriteBashOperations } from "./tools/bash.js";
 export { createSpriteEditTool, type SpriteEditToolOptions, createSpriteEditOperations } from "./tools/edit.js";

@@ -230,6 +230,31 @@ Returns all 7 tools as a named object: `{ read, bash, edit, write, grep, find, l
 
 Create a single tool with full control over its options.
 
+### `discoverSpriteSkills(options)`
+
+Discovers `SKILL.md` files installed on the sprite and returns both structured metadata and a ready-to-append system-prompt section.
+
+By default it scans:
+- `/home/sprite/.claude/skills`
+- `<workingDirectory>/.claude/skills`
+
+This is useful when your orchestrator runs with Sprite-backed `read`: local skill paths such as `/Users/.../SKILL.md` are not readable from the sprite, but sprite-local skill paths are.
+
+```typescript
+import { discoverSpriteSkills } from "pi-sprite";
+
+const { skills, diagnostics, spriteSkillsSystemPrompt } = await discoverSpriteSkills({
+  spriteName: "my-sprite",
+  workingDirectory: "/home/sprite/project",
+});
+
+// Append spriteSkillsSystemPrompt to your agent's system prompt.
+// The generated <location> entries are sprite filesystem paths that the
+// Sprite-backed read tool can load, e.g. /home/sprite/.claude/skills/sprite/SKILL.md.
+```
+
+You can override the scanned roots with `skillRoots` or disable the defaults with `includeDefaultRoots: false`.
+
 ### Low-level operations
 
 You can also import the raw `Operations` implementations to compose your own tools:
