@@ -288,7 +288,7 @@ export default function (pi: ExtensionAPI) {
         "success"
       );
     } else {
-      ctx.ui.setStatus("sprite", ctx.ui.theme.silver("Sprite: local"));
+      ctx.ui.setStatus("sprite", ctx.ui.theme.fg("dim", "Sprite: local"));
     }
   });
 
