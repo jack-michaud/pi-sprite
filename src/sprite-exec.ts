@@ -204,10 +204,8 @@ export function streamOnSprite(
 /**
  * Upload a local file to a sprite using `sprite exec --file`.
  *
- * The uploaded file is assumed to be available on the sprite at the same
- * absolute path as the local file. It is then moved to `remoteDest`.
- *
- * Adjust this if your sprite CLI places uploaded files elsewhere.
+ * The sprite CLI expects uploads in `source:dest` form and places the file at
+ * `remoteDest` before the command executes.
  */
 export async function uploadFileToSprite(
   spriteName: string,
@@ -215,14 +213,11 @@ export async function uploadFileToSprite(
   remoteDest: string,
   workingDirectory: string = "/home/sprite"
 ): Promise<void> {
-  const result = await execOnSprite(
-    `mv ${escapeShellArg(localPath)} ${escapeShellArg(remoteDest)}`,
-    {
-      spriteName,
-      workingDirectory,
-      extraArgs: ["--file", localPath],
-    }
-  );
+  const result = await execOnSprite(`test -f ${escapeShellArg(remoteDest)}`, {
+    spriteName,
+    workingDirectory,
+    extraArgs: ["--file", `${localPath}:${remoteDest}`],
+  });
   if (result.exitCode !== 0) {
     throw new Error(
       `Failed to upload file to ${remoteDest}: ${result.stderr || result.stdout}`
