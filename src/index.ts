@@ -29,13 +29,13 @@ import {
 } from "./tools/ls.js";
 
 export * from "./sprite-exec.js";
-export { createSpriteReadTool, type SpriteReadToolOptions } from "./tools/read.js";
-export { createSpriteBashTool, type SpriteBashToolOptions } from "./tools/bash.js";
-export { createSpriteEditTool, type SpriteEditToolOptions } from "./tools/edit.js";
-export { createSpriteWriteTool, type SpriteWriteToolOptions } from "./tools/write.js";
-export { createSpriteGrepTool, type SpriteGrepToolOptions } from "./tools/grep.js";
-export { createSpriteFindTool, type SpriteFindToolOptions } from "./tools/find.js";
-export { createSpriteLsTool, type SpriteLsToolOptions } from "./tools/ls.js";
+export { createSpriteReadTool, type SpriteReadToolOptions, createSpriteReadOperations } from "./tools/read.js";
+export { createSpriteBashTool, type SpriteBashToolOptions, createSpriteBashOperations } from "./tools/bash.js";
+export { createSpriteEditTool, type SpriteEditToolOptions, createSpriteEditOperations } from "./tools/edit.js";
+export { createSpriteWriteTool, type SpriteWriteToolOptions, createSpriteWriteOperations } from "./tools/write.js";
+export { createSpriteGrepTool, type SpriteGrepToolOptions, createSpriteGrepOperations, verifyRipgrepInstalled } from "./tools/grep.js";
+export { createSpriteFindTool, type SpriteFindToolOptions, createSpriteFindOperations } from "./tools/find.js";
+export { createSpriteLsTool, type SpriteLsToolOptions, createSpriteLsOperations } from "./tools/ls.js";
 
 export interface SpriteToolSet {
   read: AgentTool<any>;

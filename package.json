@@ -13,11 +13,15 @@
   },
   "keywords": [
     "pi",
+    "pi-package",
     "coding-agent",
     "sprite",
     "fly.io",
     "ai-agent"
   ],
+  "pi": {
+    "extensions": ["./extensions/sprite.ts"]
+  },
   "author": "",
   "license": "MIT",
   "devDependencies": {

@@ -11,23 +11,48 @@ Sprite-specific implementations of the [pi-coding-agent] tools. Run your agent o
 
 `pi-sprite` provides **drop-in replacements** that operate on a **Fly.io Sprite** — an isolated cloud VM accessed via the `sprite` CLI.
 
-## Install
+This package works in **two modes**:
+
+1. **Extension mode** — install as a pi package and your existing `pi` session transparently targets a sprite
+2. **SDK mode** — import tool factories programmatically in your own scripts
+
+---
+
+## Quick Start (Extension Mode)
+
+Install the pi extension and run pi targeting your sprite:
 
 ```bash
-npm install @mariozechner/pi-coding-agent
-# or just clone this repo and build
-npm install
-npm run build
+# From a local clone
+pi install /path/to/pi-sprite
+
+# Or when available on npm
+# pi install npm:pi-sprite
+
+# Then launch pi targeting a sprite
+pi --sprite my-sprite
+
+# Or via environment variable
+SPRITE_NAME=my-sprite SPRITE_WORKING_DIR=/home/sprite/project pi
 ```
 
-Requires the `sprite` CLI to be installed and authenticated:
+When `--sprite` (or `SPRITE_NAME`) is set, every built-in tool operates on the sprite:
+- `read`, `write`, `edit`, `bash`, `grep`, `find`, `ls`
+- `!` and `!!` user bash commands
 
-```bash
-sprite login
-sprite list                    # verify
+The status bar shows `Sprite: my-sprite:/home/sprite` so you always know where you're running.
+
+Use `/sprite` while running to check the current connection:
+
+```
+/sprite                       # show current sprite
 ```
 
-## Usage
+---
+
+## SDK Mode
+
+For programmatic use in your own agent scripts:
 
 ### Create tool presets (mirrors pi-coding-agent presets)
 
@@ -127,6 +152,35 @@ agent.subscribe((event) => {
 await agent.prompt("What files are in the current directory?");
 ```
 
+---
+
+## Install
+
+```bash
+npm install @mariozechner/pi-coding-agent
+# or just clone this repo and build
+npm install
+npm run build
+```
+
+Requires the `sprite` CLI to be installed and authenticated:
+
+```bash
+sprite login
+sprite list                    # verify
+```
+
+---
+
+## Extension: quick reference
+
+| Flag / Env | Description |
+|------------|-------------|
+| `--sprite <name>` | Target sprite name |
+| `SPRITE_NAME` | Target sprite name (env fallback) |
+| `SPRITE_WORKING_DIR` | Base directory on the sprite (default: `/home/sprite`) |
+| `/sprite` | Show current sprite connection |
+
 ## How it works
 
 All tool operations delegate to `sprite -s <name> exec -- <command>`, the standard way to interact with Sprites. There's no SSH — it's all through the sprite CLI.
@@ -158,31 +212,7 @@ Or Debian/Ubuntu:
 sprite -s my-sprite exec -- bash -c 'apt-get update && apt-get install -y ripgrep'
 ```
 
-## Built-in REPL
-
-This repo includes a ready-to-run REPL in `src/main.ts`. It uses `@mariozechner/pi-agent-core`'s `Agent` directly to give you a minimal, streaming terminal agent on your sprite.
-
-```bash
-# Run with defaults (sprite: pi-sprite-test, model: anthropic/claude-sonnet-4-20250514)
-npm start
-
-# Configure via environment variables
-SPRITE_NAME=prod-1 MODEL_PROVIDER=openai MODEL_ID=gpt-4o npm start
-SPRITE_WORKING_DIR=/home/sprite/app npm start
-```
-
-### REPL features
-
-- **Streaming output** — text appears as the model generates it
-- **Multi-line input** — end a line with `\` and press Enter to continue
-- **Tool call display** — shows `[read]`, `[bash]`, etc. in real time
-- **Slash commands** — `/exit` to quit
-
-Requirements for the REPL:
-- `ANTHROPIC_API_KEY` (or matching key for your provider)
-- `sprite` CLI authenticated and the target sprite exists
-
-## API
+## SDK API
 
 ### `createSpriteCodingTools(options)`
 
@@ -196,9 +226,22 @@ Returns `[read, grep, find, ls]` for safe exploration without write access.
 
 Returns all 7 tools as a named object: `{ read, bash, edit, write, grep, find, ls }`.
 
-### `createSprite<Name>Tool(options)`
+### `createSprite<Name>Tool(options)` (e.g. `createSpriteReadTool`, `createSpriteBashTool`, etc.)
 
 Create a single tool with full control over its options.
+
+### Low-level operations
+
+You can also import the raw `Operations` implementations to compose your own tools:
+
+```typescript
+import {
+  createSpriteReadOperations,
+  createSpriteWriteOperations,
+  createSpriteBashOperations,
+  // ...etc
+} from "pi-sprite";
+```
 
 All functions accept:
 - `spriteName` — the sprite's name (`sprite list` to see yours)
