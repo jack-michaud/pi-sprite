@@ -40,6 +40,7 @@ import {
   createSpriteGrepOperations,
   createSpriteLsOperations,
   createSpriteReadOperations,
+  createSpriteWriteOperations,
 } from "../src/index.js";
 
 export default function (pi: ExtensionAPI) {
@@ -103,7 +104,10 @@ export default function (pi: ExtensionAPI) {
     return {
       readFile: (p) => ops.readFile(toRemote(p)),
       access: (p) => ops.access(toRemote(p)),
-      detectImageMimeType: (p) => ops.detectImageMimeType(toRemote(p)),
+      detectImageMimeType: (p) => {
+        if (!ops.detectImageMimeType) return Promise.resolve(null);
+        return ops.detectImageMimeType(toRemote(p));
+      },
     };
   }
 
@@ -285,7 +289,7 @@ export default function (pi: ExtensionAPI) {
       );
       ctx.ui.notify(
         `🧚 Sprite mode: ${name} (${spriteWorkingDir})`,
-        "success"
+        "info"
       );
     } else {
       ctx.ui.setStatus("sprite", ctx.ui.theme.fg("dim", "Sprite: local"));
@@ -331,7 +335,7 @@ export default function (pi: ExtensionAPI) {
         // Switch to a different sprite (creates new session)
         const newName = args.trim();
         await ctx.reload();
-        ctx.ui.notify(`Switched to sprite: ${newName}`, "success");
+        ctx.ui.notify(`Switched to sprite: ${newName}`, "info");
       } else {
         ctx.ui.notify(
           `Connected to: ${cfg.spriteName} (${cfg.spriteWorkingDir})`,

@@ -10,7 +10,7 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "start": "node dist/main.js",
-    "test:unit": "node --import tsx src/path-expansion.test.ts",
+    "test:unit": "node --import tsx src/path-expansion.test.ts && node --import tsx extension-import.test.mjs",
     "test:e2e": "npm run build && node dist/e2e-test.js"
   },
   "keywords": [
