@@ -4,7 +4,7 @@ import type {
   ReadToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createReadTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath } from "../sprite-exec.js";
 
 export interface SpriteReadToolOptions extends ReadToolOptions {
   /** Name of the sprite to target */
@@ -26,16 +26,16 @@ export function createSpriteReadOperations(
   return {
     readFile: async (absolutePath) => {
       const result = await execOnSprite(
-        `base64 ${JSON.stringify(absolutePath)}`,
-        { spriteName, workingDirectory }
+        `base64 ${JSON.stringify(resolveSpritePath(absolutePath))}`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       return Buffer.from(result.stdout.trim(), "base64");
     },
 
     access: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -r ${JSON.stringify(absolutePath)} && echo "ok"`,
-        { spriteName, workingDirectory }
+        `test -r ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "ok"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       if (!result.stdout.trim()) {
         throw new Error(`File not accessible: ${absolutePath}`);
@@ -44,8 +44,8 @@ export function createSpriteReadOperations(
 
     detectImageMimeType: async (absolutePath) => {
       const result = await execOnSprite(
-        `file --mime-type -b ${JSON.stringify(absolutePath)}`,
-        { spriteName, workingDirectory }
+        `file --mime-type -b ${JSON.stringify(resolveSpritePath(absolutePath))}`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       const mime = result.stdout.trim();
       const supported = ["image/jpeg", "image/png", "image/gif", "image/webp"];

@@ -6,7 +6,7 @@ import type {
   FindToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createFindTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath } from "../sprite-exec.js";
 
 export interface SpriteFindToolOptions extends FindToolOptions {
   /** Name of the sprite to target */
@@ -28,8 +28,8 @@ export function createSpriteFindOperations(
   return {
     exists: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -e ${JSON.stringify(absolutePath)} && echo "yes" || echo "no"`,
-        { spriteName, workingDirectory }
+        `test -e ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "yes" || echo "no"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       return result.stdout.trim() === "yes";
     },
@@ -46,15 +46,15 @@ export function createSpriteFindOperations(
           .replace(/\*\*/g, "*")
           .replace(/\*/g, "*")
           .replace(/\?/g, "?");
-        command = `find ${JSON.stringify(cwd)} -name ${JSON.stringify(findPattern)} -type f 2>/dev/null | head -n ${limit}`;
+        command = `find ${JSON.stringify(resolveSpritePath(cwd))} -name ${JSON.stringify(findPattern)} -type f 2>/dev/null | head -n ${limit}`;
       } else {
         // Simple glob in cwd
-        command = `find ${JSON.stringify(cwd)} -maxdepth 1 -name ${JSON.stringify(pattern)} -type f 2>/dev/null | head -n ${limit}`;
+        command = `find ${JSON.stringify(resolveSpritePath(cwd))} -maxdepth 1 -name ${JSON.stringify(pattern)} -type f 2>/dev/null | head -n ${limit}`;
       }
 
       const result = await execOnSprite(command, {
         spriteName,
-        workingDirectory,
+        workingDirectory: resolveSpritePath(workingDirectory),
       });
       return result.stdout
         .split("\n")

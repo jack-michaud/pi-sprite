@@ -4,7 +4,7 @@ import type {
   EditToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createEditTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite, writeFileToSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath, writeFileToSprite } from "../sprite-exec.js";
 
 export interface SpriteEditToolOptions extends EditToolOptions {
   /** Name of the sprite to target */
@@ -24,21 +24,21 @@ export function createSpriteEditOperations(
 ): EditOperations {
   return {
     readFile: async (absolutePath) => {
-      const result = await execOnSprite(`cat ${JSON.stringify(absolutePath)}`, {
+      const result = await execOnSprite(`cat ${JSON.stringify(resolveSpritePath(absolutePath))}`, {
         spriteName,
-        workingDirectory,
+        workingDirectory: resolveSpritePath(workingDirectory),
       });
       return Buffer.from(result.stdout, "utf-8");
     },
 
     writeFile: async (absolutePath, content) => {
-      await writeFileToSprite(spriteName, absolutePath, content, workingDirectory);
+      await writeFileToSprite(spriteName, resolveSpritePath(absolutePath), content, resolveSpritePath(workingDirectory));
     },
 
     access: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -r ${JSON.stringify(absolutePath)} && test -w ${JSON.stringify(absolutePath)} && echo "ok"`,
-        { spriteName, workingDirectory }
+        `test -r ${JSON.stringify(resolveSpritePath(absolutePath))} && test -w ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "ok"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       if (!result.stdout.trim()) {
         throw new Error(`File not accessible: ${absolutePath}`);

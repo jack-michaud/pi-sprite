@@ -6,7 +6,7 @@ import type {
   LsToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createLsTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath } from "../sprite-exec.js";
 
 export interface SpriteLsToolOptions extends LsToolOptions {
   /** Name of the sprite to target */
@@ -25,16 +25,16 @@ export function createSpriteLsOperations(
   return {
     exists: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -e ${JSON.stringify(absolutePath)} && echo "yes" || echo "no"`,
-        { spriteName, workingDirectory }
+        `test -e ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "yes" || echo "no"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       return result.stdout.trim() === "yes";
     },
 
     stat: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -d ${JSON.stringify(absolutePath)} && echo "dir" || echo "file"`,
-        { spriteName, workingDirectory }
+        `test -d ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "dir" || echo "file"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       const isDir = result.stdout.trim() === "dir";
       return {
@@ -44,8 +44,8 @@ export function createSpriteLsOperations(
 
     readdir: async (absolutePath) => {
       const result = await execOnSprite(
-        `ls -A ${JSON.stringify(absolutePath)} 2>/dev/null || echo ""`,
-        { spriteName, workingDirectory }
+        `ls -A ${JSON.stringify(resolveSpritePath(absolutePath))} 2>/dev/null || echo ""`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       const items = result.stdout
         .split("\n")

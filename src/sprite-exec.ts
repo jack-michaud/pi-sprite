@@ -3,6 +3,8 @@ import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+export const SPRITE_HOME = "/home/sprite";
+
 export interface SpriteExecOptions {
   /** Name of the sprite to target */
   spriteName: string;
@@ -22,6 +24,25 @@ export function escapeShellArg(arg: string): string {
     return `'${arg}'`;
   }
   return "'" + arg.replace(/'/g, "'\"'\"'") + "'";
+}
+
+/**
+ * Resolve sprite-local paths, expanding a leading `~` to the sprite home.
+ *
+ * The Sprite runs in a Linux VM where `~` should refer to the Sprite's home
+ * directory, not the host machine's home directory.
+ */
+export function resolveSpritePath(
+  spritePath: string,
+  spriteHome: string = SPRITE_HOME
+): string {
+  if (spritePath === "~") {
+    return spriteHome;
+  }
+  if (spritePath.startsWith("~/")) {
+    return `${spriteHome}/${spritePath.slice(2)}`;
+  }
+  return spritePath;
 }
 
 /**
@@ -53,13 +74,13 @@ export function execOnSprite(
   return new Promise((resolve, reject) => {
     const {
       spriteName,
-      workingDirectory = "/home/sprite",
+      workingDirectory = SPRITE_HOME,
       timeout,
       signal,
       extraArgs = [],
     } = options;
 
-    const fullCommand = `cd ${escapeShellArg(workingDirectory)} && ${command}`;
+    const fullCommand = `cd ${escapeShellArg(resolveSpritePath(workingDirectory))} && ${command}`;
     const args = buildSpriteArgs(spriteName, fullCommand, extraArgs);
 
     const child = spawn("sprite", args, {
@@ -137,7 +158,7 @@ export function streamOnSprite(
   return new Promise((resolve, reject) => {
     const {
       spriteName,
-      workingDirectory = "/home/sprite",
+      workingDirectory = SPRITE_HOME,
       timeout,
       signal,
       onData,
@@ -145,7 +166,7 @@ export function streamOnSprite(
       env,
     } = options;
 
-    const fullCommand = `cd ${escapeShellArg(workingDirectory)} && ${command}`;
+    const fullCommand = `cd ${escapeShellArg(resolveSpritePath(workingDirectory))} && ${command}`;
     const args = buildSpriteArgs(spriteName, fullCommand, extraArgs);
 
     const child = spawn("sprite", args, {
@@ -211,12 +232,13 @@ export async function uploadFileToSprite(
   spriteName: string,
   localPath: string,
   remoteDest: string,
-  workingDirectory: string = "/home/sprite"
+  workingDirectory: string = SPRITE_HOME
 ): Promise<void> {
-  const result = await execOnSprite(`test -f ${escapeShellArg(remoteDest)}`, {
+  const resolvedRemoteDest = resolveSpritePath(remoteDest);
+  const result = await execOnSprite(`test -f ${escapeShellArg(resolvedRemoteDest)}`, {
     spriteName,
-    workingDirectory,
-    extraArgs: ["--file", `${localPath}:${remoteDest}`],
+    workingDirectory: resolveSpritePath(workingDirectory),
+    extraArgs: ["--file", `${localPath}:${resolvedRemoteDest}`],
   });
   if (result.exitCode !== 0) {
     throw new Error(
@@ -237,9 +259,12 @@ export async function writeFileToSprite(
   spriteName: string,
   remotePath: string,
   content: string,
-  workingDirectory: string = "/home/sprite"
+  workingDirectory: string = SPRITE_HOME
 ): Promise<void> {
   const tmpFile = join(tmpdir(), `pi-sprite-${randomBytes(8).toString("hex")}.txt`);
+
+  remotePath = resolveSpritePath(remotePath);
+  workingDirectory = resolveSpritePath(workingDirectory);
 
   // Write locally
   await import("node:fs/promises").then((fs) => fs.writeFile(tmpFile, content, "utf-8"));
@@ -262,6 +287,7 @@ export function createSpriteWriteCommand(
   absolutePath: string,
   content: string
 ): string {
+  absolutePath = resolveSpritePath(absolutePath);
   const base64 = Buffer.from(content, "utf-8").toString("base64");
   let delimiter = `EOF_${randomBytes(8).toString("hex")}`;
   while (base64.includes(delimiter)) {

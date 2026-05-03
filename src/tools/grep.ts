@@ -6,7 +6,7 @@ import type {
   GrepToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createGrepTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath } from "../sprite-exec.js";
 
 export interface SpriteGrepToolOptions extends GrepToolOptions {
   /** Name of the sprite to target */
@@ -28,16 +28,16 @@ export function createSpriteGrepOperations(
   return {
     isDirectory: async (absolutePath) => {
       const result = await execOnSprite(
-        `test -d ${JSON.stringify(absolutePath)} && echo "yes" || echo "no"`,
-        { spriteName, workingDirectory }
+        `test -d ${JSON.stringify(resolveSpritePath(absolutePath))} && echo "yes" || echo "no"`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       return result.stdout.trim() === "yes";
     },
 
     readFile: async (absolutePath) => {
       const result = await execOnSprite(
-        `cat ${JSON.stringify(absolutePath)}`,
-        { spriteName, workingDirectory }
+        `cat ${JSON.stringify(resolveSpritePath(absolutePath))}`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       return result.stdout;
     },
@@ -54,7 +54,7 @@ export async function verifyRipgrepInstalled(
 ): Promise<void> {
   const result = await execOnSprite("which rg", {
     spriteName,
-    workingDirectory,
+    workingDirectory: resolveSpritePath(workingDirectory),
   });
   if (result.exitCode !== 0) {
     throw new Error(

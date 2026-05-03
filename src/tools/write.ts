@@ -4,7 +4,7 @@ import type {
   WriteToolOptions,
 } from "@mariozechner/pi-coding-agent";
 import { createWriteTool } from "@mariozechner/pi-coding-agent";
-import { execOnSprite, writeFileToSprite } from "../sprite-exec.js";
+import { execOnSprite, resolveSpritePath, writeFileToSprite } from "../sprite-exec.js";
 
 export interface SpriteWriteToolOptions extends WriteToolOptions {
   /** Name of the sprite to target */
@@ -26,13 +26,13 @@ export function createSpriteWriteOperations(
 ): WriteOperations {
   return {
     writeFile: async (absolutePath, content) => {
-      await writeFileToSprite(spriteName, absolutePath, content, workingDirectory);
+      await writeFileToSprite(spriteName, resolveSpritePath(absolutePath), content, resolveSpritePath(workingDirectory));
     },
 
     mkdir: async (dir) => {
       const result = await execOnSprite(
-        `mkdir -p ${JSON.stringify(dir)}`,
-        { spriteName, workingDirectory }
+        `mkdir -p ${JSON.stringify(resolveSpritePath(dir))}`,
+        { spriteName, workingDirectory: resolveSpritePath(workingDirectory) }
       );
       if (result.exitCode !== 0) {
         throw new Error(`Failed to create directory ${dir}: ${result.stderr}`);
